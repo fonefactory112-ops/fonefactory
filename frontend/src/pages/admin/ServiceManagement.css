@@ -1,0 +1,224 @@
+.service-mgmt-container {
+  padding-bottom: var(--space-8);
+}
+
+.mgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.mgmt-header h2 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-1);
+}
+
+.mgmt-header p {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.mgmt-actions-bar {
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--color-text-muted);
+}
+
+.search-input {
+  padding-left: 42px;
+}
+
+.table-responsive {
+  border-radius: var(--radius-xl);
+  overflow-x: auto;
+}
+
+.mgmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.mgmt-table th {
+  background-color: rgba(22, 29, 42, 0.5);
+  padding: var(--space-4);
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.mgmt-table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.no-data-td {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--space-8) !important;
+}
+
+.table-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.table-bold-text {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.table-sub-text {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin-top: 2px;
+}
+
+.table-action-btns {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Modals layout properties */
+.modal-content {
+  width: 100%;
+  max-width: 580px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  animation: modal-enter var(--transition-base);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.modal-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.image-uploader-section {
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
+}
+
+.upload-preview {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-placeholder {
+  color: var(--color-text-muted);
+}
+
+.upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.upload-tip {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.checkbox-group {
+  margin-top: var(--space-2);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .mgmt-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .mgmt-header .btn {
+    width: 100%;
+  }
+
+  .image-uploader-section {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,132 @@
+.admin-dashboard-container {
+  padding-bottom: var(--space-8);
+}
+
+.admin-page-header {
+  margin-bottom: var(--space-8);
+}
+
+.admin-page-header h2 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-1);
+}
+
+.admin-page-header p {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.stat-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  transition: transform var(--transition-base);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stat-card-title {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.stat-card-value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon-wrapper.color-primary {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.stat-icon-wrapper.color-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+}
+
+.stat-icon-wrapper.color-success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.stat-icon-wrapper.color-warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.stat-icon-wrapper.color-error {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.dashboard-shortcuts {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+.dashboard-shortcuts h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-1);
+}
+
+.dashboard-shortcuts p {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.shortcut-buttons {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.mt-8 {
+  margin-top: var(--space-8);
+}
+
+@media (max-width: 992px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

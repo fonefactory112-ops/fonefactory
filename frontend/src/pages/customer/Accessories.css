@@ -1,0 +1,15 @@
+.accessories-page-container {
+  min-height: 70vh;
+}
+
+.accessories-categories-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-10);
+}
+
+.products-grid {
+  margin-top: var(--space-4);
+}
