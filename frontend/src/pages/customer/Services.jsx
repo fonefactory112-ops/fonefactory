@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import ServiceCard from '../../components/customer/ServiceCard';
-import OTPModal from '../../components/common/OTPModal';
+import EnquiryModal from '../../components/common/EnquiryModal';
 import EmptyState from '../../components/common/EmptyState';
 import { FiSmartphone } from 'react-icons/fi';
 import './Services.css';
@@ -12,7 +12,7 @@ export default function Services() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enquiryItem, setEnquiryItem] = useState(null);
-  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [enquiredIds, setEnquiredIds] = useState([]);
 
   // Load enquired IDs from sessionStorage to persist during page browsing
@@ -58,7 +58,7 @@ export default function Services() {
       category_name: service.service_categories?.name || 'Service',
       type: 'service',
     });
-    setIsOTPModalOpen(true);
+    setIsEnquiryModalOpen(true);
   };
 
   const handleEnquirySuccess = (serviceId) => {
@@ -123,10 +123,10 @@ export default function Services() {
         </div>
       )}
 
-      {/* OTP verification popup */}
-      <OTPModal
-        isOpen={isOTPModalOpen}
-        onClose={() => setIsOTPModalOpen(false)}
+      {/* Enquiry popup */}
+      <EnquiryModal
+        isOpen={isEnquiryModalOpen}
+        onClose={() => setIsEnquiryModalOpen(false)}
         item={enquiryItem}
         onSuccess={handleEnquirySuccess}
       />

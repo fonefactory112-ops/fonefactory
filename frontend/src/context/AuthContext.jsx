@@ -38,11 +38,8 @@ export function AuthProvider({ children }) {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Store session data in localStorage for our api.js helper to pick up
-        localStorage.setItem('supabase.auth.token', JSON.stringify(session));
         checkAdminStatus(session.user);
       } else {
-        localStorage.removeItem('supabase.auth.token');
         setLoading(false);
       }
     });
@@ -50,10 +47,8 @@ export function AuthProvider({ children }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        localStorage.setItem('supabase.auth.token', JSON.stringify(session));
         checkAdminStatus(session.user);
       } else {
-        localStorage.removeItem('supabase.auth.token');
         setUser(null);
         setAdminProfile(null);
         setLoading(false);
@@ -74,11 +69,6 @@ export function AuthProvider({ children }) {
       });
       if (error) throw error;
       
-      // Store session manually immediately so next calls pick it up
-      if (data.session) {
-        localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-      }
-      
       // Now verify if approved
       const adminData = await api.verifyAdmin();
       setAdminProfile(adminData);
@@ -94,7 +84,6 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       await supabase.auth.signOut();
-      localStorage.removeItem('supabase.auth.token');
       setUser(null);
       setAdminProfile(null);
     } catch (err) {

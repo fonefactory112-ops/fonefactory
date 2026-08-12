@@ -56,6 +56,7 @@ export default function EnquiryManagement() {
 
   const filteredEnquiries = enquiries.filter(e =>
     e.customer_phone.toLowerCase().includes(search.toLowerCase()) ||
+    e.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
     e.reference_name.toLowerCase().includes(search.toLowerCase()) ||
     e.category_name.toLowerCase().includes(search.toLowerCase())
   );
@@ -65,7 +66,7 @@ export default function EnquiryManagement() {
       <div className="mgmt-header">
         <div>
           <h2>Customer Enquiries</h2>
-          <p>View verified OTP enquiries, check phone numbers, and update enquiry tracking status</p>
+          <p>View customer enquiries, check contact details, and update tracking status</p>
         </div>
       </div>
 
@@ -126,11 +127,10 @@ export default function EnquiryManagement() {
               <thead>
                 <tr>
                   <th>Date & Time</th>
-                  <th>Customer Phone</th>
+                  <th>Customer</th>
                   <th>Type</th>
                   <th>Item Name</th>
                   <th>Category</th>
-                  <th>Verification</th>
                   <th>Enquiry Status</th>
                 </tr>
               </thead>
@@ -141,8 +141,9 @@ export default function EnquiryManagement() {
                       <div className="table-bold-text">{formatDate(enquiry.created_at)}</div>
                       <div className="table-sub-text">{formatTime(enquiry.created_at)}</div>
                     </td>
-                    <td className="table-bold-text font-mono">
-                      <a href={`tel:${enquiry.customer_phone}`} className="phone-tel-link">
+                    <td>
+                      <div className="table-bold-text">{enquiry.customer_name}</div>
+                      <a href={`tel:${enquiry.customer_phone}`} className="phone-tel-link font-mono table-sub-text">
                         <FiPhone size={12} style={{ marginRight: '6px' }} />
                         {enquiry.customer_phone}
                       </a>
@@ -154,11 +155,6 @@ export default function EnquiryManagement() {
                     </td>
                     <td className="table-bold-text">{enquiry.reference_name}</td>
                     <td>{enquiry.category_name}</td>
-                    <td>
-                      <span className="badge badge-success">
-                        {enquiry.verification_status}
-                      </span>
-                    </td>
                     <td>
                       <select
                         className={`form-select status-select-dropdown ${enquiry.enquiry_status}`}
@@ -185,12 +181,16 @@ export default function EnquiryManagement() {
                   <span className={`badge ${enquiry.type === 'service' ? 'badge-info' : 'badge-warning'}`}>
                     {enquiry.type}
                   </span>
-                  <span className="badge badge-success">Verified</span>
+                  <span className="badge badge-secondary">{formatDate(enquiry.created_at)}</span>
                 </div>
 
                 <div className="mobile-card-row body-row">
                   <h4 className="enquiry-item-title">{enquiry.reference_name}</h4>
                   <span className="enquiry-item-category">{enquiry.category_name}</span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <strong>{enquiry.customer_name}</strong>
                 </div>
 
                 <div className="mobile-card-row phone-row font-mono">

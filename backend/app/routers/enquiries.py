@@ -1,98 +1,51 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.dependencies import get_current_admin, get_supabase_admin
 from app.config import get_settings, Settings
-from app.schemas.enquiries import OTPSendRequest, OTPVerifyRequest, EnquiryCreate, EnquiryStatusUpdate
+from app.schemas.enquiries import EnquiryCreate, EnquiryStatusUpdate
 from supabase import Client
 from typing import Optional
 import httpx
+import re
 
 router = APIRouter(prefix="/enquiries", tags=["Enquiries"])
 
-
-@router.post("/send-otp")
-async def send_otp(
-    data: OTPSendRequest,
-    settings: Settings = Depends(get_settings),
-):
-    """Send OTP to customer phone number via Supabase Auth."""
-    phone = data.phone.strip()
-
-    # Ensure phone has country code
-    if not phone.startswith("+"):
-        phone = f"+91{phone}"  # Default to India
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.supabase_url}/auth/v1/otp",
-                json={"phone": phone},
-                headers={
-                    "apikey": settings.supabase_anon_key,
-                    "Content-Type": "application/json",
-                },
-            )
-
-            if response.status_code not in (200, 201):
-                error_detail = response.json().get("msg", response.text)
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Failed to send OTP: {error_detail}",
-                )
-
-        return {"message": "OTP sent successfully", "phone": phone}
-
-    except httpx.RequestError:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OTP service is temporarily unavailable. Please try again.",
-        )
+# Valid Indian mobile number in E.164: +91 followed by 10 digits starting with 6-9
+INDIAN_MOBILE_PATTERN = re.compile(r"^\+91[6-9]\d{9}$")
 
 
-@router.post("/verify-otp")
-async def verify_otp(
-    data: OTPVerifyRequest,
-    settings: Settings = Depends(get_settings),
-):
-    """Verify OTP code entered by customer."""
-    phone = data.phone.strip()
-    if not phone.startswith("+"):
+def normalize_indian_phone(raw_phone: str) -> str:
+    """Normalize an Indian phone number to E.164 format (+91XXXXXXXXXX).
+
+    Handles inputs like:
+      - "9876543210"       -> "+919876543210"
+      - "919876543210"     -> "+919876543210"
+      - "+919876543210"    -> "+919876543210"
+      - "  98765 43210  "  -> "+919876543210"
+
+    Raises HTTPException 400 if the result is not a valid Indian mobile number.
+    """
+    # Strip whitespace, dashes, dots, parentheses
+    phone = re.sub(r"[\s\-\.\(\)]+", "", raw_phone.strip())
+
+    if phone.startswith("+91"):
+        pass  # already has country code
+    elif phone.startswith("91") and len(phone) == 12:
+        phone = f"+{phone}"
+    elif len(phone) == 10:
+        phone = f"+91{phone}"
+    elif not phone.startswith("+"):
         phone = f"+91{phone}"
 
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.supabase_url}/auth/v1/verify",
-                json={
-                    "phone": phone,
-                    "token": data.otp_code,
-                    "type": "sms",
-                },
-                headers={
-                    "apikey": settings.supabase_anon_key,
-                    "Content-Type": "application/json",
-                },
-            )
-
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid OTP code. Please try again.",
-                )
-
-            result = response.json()
-
-        return {
-            "message": "Phone number verified successfully",
-            "phone": phone,
-            "verified": True,
-            "access_token": result.get("access_token", ""),
-        }
-
-    except httpx.RequestError:
+    if not INDIAN_MOBILE_PATTERN.match(phone):
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Verification service is temporarily unavailable.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid Indian mobile number. Please enter a valid 10-digit number starting with 6-9.",
         )
+
+    return phone
+
+
+
 
 
 @router.post("/")
@@ -100,8 +53,11 @@ async def create_enquiry(
     data: EnquiryCreate,
     supabase: Client = Depends(get_supabase_admin),
 ):
-    """Create a new enquiry after phone verification.
-    Uses service_role to insert (bypasses RLS for this controlled operation)."""
+    """Create a new enquiry."""
+    if not data.customer_name.strip():
+        raise HTTPException(status_code=400, detail="Name cannot be empty")
+
+    phone = normalize_indian_phone(data.customer_phone)
 
     # Validate enquiry type
     if data.type not in ("service", "accessory"):
@@ -118,7 +74,7 @@ async def create_enquiry(
     existing = (
         supabase.table("enquiries")
         .select("id")
-        .eq("customer_phone", data.customer_phone)
+        .eq("customer_phone", phone)
         .eq("reference_id", data.reference_id)
         .eq("type", data.type)
         .gte("created_at", "now() - interval '24 hours'")
@@ -134,7 +90,8 @@ async def create_enquiry(
         "reference_id": data.reference_id,
         "reference_name": data.reference_name,
         "category_name": data.category_name,
-        "customer_phone": data.customer_phone,
+        "customer_name": data.customer_name.strip(),
+        "customer_phone": phone,
         "verification_status": "verified",
         "enquiry_status": "new",
     }

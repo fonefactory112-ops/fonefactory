@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient';
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function request(endpoint, options = {}) {
@@ -15,17 +17,13 @@ async function request(endpoint, options = {}) {
   }
 
   // Automatically attach auth token if present
-  const sessionStr = localStorage.getItem('supabase.auth.token') || localStorage.getItem('sb-gnsbxqensbrhupxhfcxa-auth-token');
-  if (sessionStr) {
-    try {
-      const session = JSON.parse(sessionStr);
-      const token = session?.access_token || session?.currentSession?.access_token;
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.error('Error reading auth token', e);
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
     }
+  } catch (e) {
+    console.error('Error getting auth session', e);
   }
 
   const response = await fetch(url, {
@@ -151,15 +149,7 @@ export const api = {
     });
   },
 
-  // Enquiries & OTP
-  sendOTP: (phone) => request('/api/v1/enquiries/send-otp', {
-    method: 'POST',
-    body: JSON.stringify({ phone }),
-  }),
-  verifyOTP: (phone, otpCode) => request('/api/v1/enquiries/verify-otp', {
-    method: 'POST',
-    body: JSON.stringify({ phone, otp_code: otpCode }),
-  }),
+  // Enquiries
   createEnquiry: (data) => request('/api/v1/enquiries/', {
     method: 'POST',
     body: JSON.stringify(data),

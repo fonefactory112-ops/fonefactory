@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import ProductCard from '../../components/customer/ProductCard';
-import OTPModal from '../../components/common/OTPModal';
+import EnquiryModal from '../../components/common/EnquiryModal';
 import EmptyState from '../../components/common/EmptyState';
 import { FiShoppingBag } from 'react-icons/fi';
 import './Accessories.css';
@@ -12,7 +12,7 @@ export default function Accessories() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enquiryItem, setEnquiryItem] = useState(null);
-  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [enquiredIds, setEnquiredIds] = useState([]);
 
   // Load enquired IDs from sessionStorage
@@ -58,7 +58,7 @@ export default function Accessories() {
       category_name: product.accessory_categories?.name || 'Accessory',
       type: 'accessory',
     });
-    setIsOTPModalOpen(true);
+    setIsEnquiryModalOpen(true);
   };
 
   const handleEnquirySuccess = (productId) => {
@@ -124,10 +124,10 @@ export default function Accessories() {
         </div>
       )}
 
-      {/* OTP validation modal */}
-      <OTPModal
-        isOpen={isOTPModalOpen}
-        onClose={() => setIsOTPModalOpen(false)}
+      {/* Enquiry validation modal */}
+      <EnquiryModal
+        isOpen={isEnquiryModalOpen}
+        onClose={() => setIsEnquiryModalOpen(false)}
         item={enquiryItem}
         onSuccess={handleEnquirySuccess}
       />

@@ -125,6 +125,7 @@ CREATE TABLE enquiries (
     reference_id UUID NOT NULL,
     reference_name TEXT NOT NULL,
     category_name TEXT NOT NULL,
+    customer_name TEXT NOT NULL,
     customer_phone TEXT NOT NULL,
     verification_status TEXT NOT NULL DEFAULT 'verified'
         CHECK (verification_status IN ('verified', 'unverified')),
