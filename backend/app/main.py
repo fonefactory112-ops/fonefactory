@@ -20,8 +20,14 @@ allowed_origins = [
     "http://localhost:3000",
 ]
 
-# Filter out empty strings and duplicates
-allowed_origins = list(set(origin for origin in allowed_origins if origin))
+# Filter out empty strings, strip trailing slashes, and remove duplicates
+cleaned_origins = []
+for origin in allowed_origins:
+    if origin:
+        origin_clean = origin.rstrip("/")
+        cleaned_origins.append(origin_clean)
+
+allowed_origins = list(set(cleaned_origins))
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,7 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE}${endpoint}`;
+  const cleanApiBase = API_BASE.replace(/\/$/, '');
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${cleanApiBase}${cleanEndpoint}`;
   
   // Set default headers
   const headers = {
