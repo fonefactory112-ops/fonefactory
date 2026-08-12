@@ -4,6 +4,7 @@ import { FiPlus, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
+import './ServiceManagement.css';
 
 export default function ServiceCategories() {
   const [categories, setCategories] = useState([]);

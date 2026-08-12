@@ -5,6 +5,7 @@ import { formatPrice } from '../../utils/formatters';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
+import './ServiceManagement.css';
 
 export default function AccessoryManagement() {
   const [accessories, setAccessories] = useState([]);

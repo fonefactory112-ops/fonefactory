@@ -103,6 +103,8 @@
 .modal-content {
   width: 100%;
   max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
   border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;

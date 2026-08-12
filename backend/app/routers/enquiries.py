@@ -6,6 +6,7 @@ from supabase import Client
 from typing import Optional
 import httpx
 import re
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/enquiries", tags=["Enquiries"])
 
@@ -71,13 +72,14 @@ async def create_enquiry(
         raise HTTPException(status_code=404, detail=f"{data.type.capitalize()} not found")
 
     # Check for duplicate enquiry (same phone + same reference within 24 hours)
+    time_threshold = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
     existing = (
         supabase.table("enquiries")
         .select("id")
         .eq("customer_phone", phone)
         .eq("reference_id", data.reference_id)
         .eq("type", data.type)
-        .gte("created_at", "now() - interval '24 hours'")
+        .gte("created_at", time_threshold)
         .execute()
     )
 

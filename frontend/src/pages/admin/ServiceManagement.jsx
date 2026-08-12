@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { FiPlus, FiEdit2, FiTrash2, FiUploadCloud, FiSearch, FiCheck, FiX } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUploadCloud, FiSearch, FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { formatPrice } from '../../utils/formatters';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
