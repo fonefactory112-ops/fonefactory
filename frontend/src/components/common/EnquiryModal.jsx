@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiX, FiPhone, FiUser, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { api } from '../../services/api';
 import LoadingSpinner from './LoadingSpinner';
-import './OTPModal.css'; // We'll keep the same CSS file name for now to maintain styles
+import './EnquiryModal.css';
 
 export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
   const [step, setStep] = useState(1); // 1: Form input, 2: Success
@@ -13,14 +13,27 @@ export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
 
   if (!isOpen) return null;
 
+  const sanitizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customerName.trim()) {
-      setError('Please enter your name.');
+
+    // Prevent double submission
+    if (loading) return;
+
+    const trimmedName = customerName.trim();
+    if (!trimmedName) {
+      setError('Please enter your full name.');
       return;
     }
-    if (!phone || phone.trim().length < 10) {
-      setError('Please enter a valid 10-digit phone number.');
+
+    const cleanPhone = sanitizePhone(phone);
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setError('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setError('Phone number must be exactly 10 digits.');
       return;
     }
 
@@ -33,8 +46,8 @@ export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
         reference_id: item.id,
         reference_name: item.name,
         category_name: item.category_name,
-        customer_name: customerName.trim(),
-        customer_phone: phone,
+        customer_name: trimmedName,
+        customer_phone: cleanPhone,
       });
 
       setStep(2);
@@ -59,36 +72,36 @@ export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
 
   return (
     <div className="modal-backdrop">
-      <div className="otp-modal-content glass-card shadow-xl" id="enquiry-modal">
-        <div className="otp-modal-header">
+      <div className="enquiry-modal-content glass-card shadow-xl" id="enquiry-modal">
+        <div className="enquiry-modal-header">
           <h3>Submit Enquiry</h3>
-          <button className="otp-modal-close" onClick={handleClose}>
+          <button className="enquiry-modal-close" onClick={handleClose}>
             <FiX size={20} />
           </button>
         </div>
 
-        <div className="otp-modal-body">
-          <p className="otp-item-context">
+        <div className="enquiry-modal-body">
+          <p className="enquiry-item-context">
             Enquiring about: <strong>{item?.name}</strong> ({item?.category_name})
           </p>
 
           {error && (
-            <div className="otp-error-alert">
+            <div className="enquiry-error-alert">
               <FiAlertCircle size={18} />
               <span>{error}</span>
             </div>
           )}
 
           {step === 1 && (
-            <form onSubmit={handleSubmit} className="otp-step-form">
-              <p className="otp-instruction">
+            <form onSubmit={handleSubmit} className="enquiry-step-form">
+              <p className="enquiry-instruction">
                 Please provide your contact details. Our team will reach out to you.
               </p>
               
               <div className="form-group">
                 <label className="form-label">Full Name</label>
-                <div className="otp-input-wrapper">
-                  <FiUser className="otp-input-icon" />
+                <div className="enquiry-input-wrapper">
+                  <FiUser className="enquiry-input-icon" />
                   <input
                     type="text"
                     className="form-input"
@@ -103,15 +116,15 @@ export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
 
               <div className="form-group">
                 <label className="form-label">Phone Number</label>
-                <div className="otp-input-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
-                  <FiPhone className="otp-input-icon" />
+                <div className="enquiry-input-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+                  <FiPhone className="enquiry-input-icon" />
                   <span style={{ paddingLeft: '35px', paddingRight: '8px', color: '#666', fontWeight: '500' }}>+91</span>
                   <input
                     type="tel"
-                    className="form-input otp-tel-input"
+                    className="form-input enquiry-tel-input"
                     placeholder="Enter 10-digit number"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ''))}
+                    onChange={(e) => setPhone(sanitizePhone(e.target.value))}
                     disabled={loading}
                     maxLength={10}
                     style={{ paddingLeft: '8px' }}
@@ -121,19 +134,23 @@ export default function EnquiryModal({ isOpen, onClose, item, onSuccess }) {
               </div>
 
               <button type="submit" className="btn btn-primary w-full" disabled={loading} style={{ marginTop: '1rem' }}>
-                {loading ? <LoadingSpinner size="small" /> : 'Submit Enquiry'}
+                {loading ? <><LoadingSpinner size="small" /> Submitting...</> : 'Submit Enquiry'}
               </button>
             </form>
           )}
 
           {step === 2 && (
-            <div className="otp-success-state">
-              <div className="otp-success-icon">
+            <div className="enquiry-success-state">
+              <div className="enquiry-success-icon">
                 <FiCheckCircle size={60} />
               </div>
               <h4>Thank You!</h4>
               <p>
-                Thank you for your enquiry. Please wait a little while. Our shop will contact you shortly.
+                Thank you for your enquiry.
+              </p>
+              <p>
+                Please wait a little while.<br />
+                Our shop will contact you shortly.
               </p>
               <button onClick={handleClose} className="btn btn-primary w-full" style={{ marginTop: '1rem' }}>
                 Close

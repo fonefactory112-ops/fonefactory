@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.dependencies import get_current_admin, get_supabase_admin
-from app.config import get_settings, Settings
 from app.schemas.enquiries import EnquiryCreate, EnquiryStatusUpdate
 from supabase import Client
 from typing import Optional
-import httpx
 import re
 from datetime import datetime, timedelta, timezone
 
@@ -49,12 +47,12 @@ def normalize_indian_phone(raw_phone: str) -> str:
 
 
 
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_enquiry(
     data: EnquiryCreate,
     supabase: Client = Depends(get_supabase_admin),
 ):
-    """Create a new enquiry."""
+    """Create a new enquiry. This is a public endpoint — no auth required."""
     if not data.customer_name.strip():
         raise HTTPException(status_code=400, detail="Name cannot be empty")
 
@@ -84,7 +82,17 @@ async def create_enquiry(
     )
 
     if existing.data:
-        return {"message": "You have already enquired about this item.", "duplicate": True}
+        # Return 200 (not 201) for duplicates — still a success from the customer's perspective
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "You have already enquired about this item. Our shop will contact you shortly.",
+                "data": {},
+                "duplicate": True,
+            },
+        )
 
     # Create the enquiry
     enquiry_data = {
@@ -103,7 +111,7 @@ async def create_enquiry(
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create enquiry")
 
-    return {"message": "Enquiry submitted successfully", "data": result.data[0], "duplicate": False}
+    return {"success": True, "message": "Enquiry submitted successfully", "data": result.data[0], "duplicate": False}
 
 
 @router.get("/")
