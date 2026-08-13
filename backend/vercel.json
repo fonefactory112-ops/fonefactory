@@ -7,8 +7,31 @@
     ],
     "routes": [
         {
+            "src": "/api/v1/enquiries/?",
+            "methods": ["OPTIONS"],
+            "dest": "api/index.py",
+            "headers": {
+                "Access-Control-Allow-Origin": "https://fonefactoryy.netlify.app",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "600"
+            }
+        },
+        {
             "src": "/(.*)",
             "dest": "api/index.py"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/(.*)",
+            "headers": [
+                { "key": "Access-Control-Allow-Origin", "value": "https://fonefactoryy.netlify.app" },
+                { "key": "Access-Control-Allow-Credentials", "value": "true" },
+                { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+                { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+            ]
         }
     ]
 }

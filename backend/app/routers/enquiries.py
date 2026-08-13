@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import JSONResponse
 from app.dependencies import get_current_admin, get_supabase_admin
 from app.schemas.enquiries import EnquiryCreate, EnquiryStatusUpdate
 from supabase import Client
 from typing import Optional
 import re
+import traceback
 from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/enquiries", tags=["Enquiries"])
@@ -38,13 +40,10 @@ def normalize_indian_phone(raw_phone: str) -> str:
     if not INDIAN_MOBILE_PATTERN.match(phone):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid Indian mobile number. Please enter a valid 10-digit number starting with 6-9.",
+            detail="Invalid Indian mobile number. Please enter a valid 10-digit number starting with 6-9.",
         )
 
     return phone
-
-
-
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -53,65 +52,76 @@ async def create_enquiry(
     supabase: Client = Depends(get_supabase_admin),
 ):
     """Create a new enquiry. This is a public endpoint — no auth required."""
-    if not data.customer_name.strip():
-        raise HTTPException(status_code=400, detail="Name cannot be empty")
+    try:
+        if not data.customer_name.strip():
+            raise HTTPException(status_code=400, detail="Name cannot be empty")
 
-    phone = normalize_indian_phone(data.customer_phone)
+        phone = normalize_indian_phone(data.customer_phone)
 
-    # Validate enquiry type
-    if data.type not in ("service", "accessory"):
-        raise HTTPException(status_code=400, detail="Type must be 'service' or 'accessory'")
+        # Validate enquiry type
+        if data.type not in ("service", "accessory"):
+            raise HTTPException(status_code=400, detail="Type must be 'service' or 'accessory'")
 
-    # Validate the reference exists
-    table = "services" if data.type == "service" else "accessories"
-    ref = supabase.table(table).select("id, name").eq("id", data.reference_id).execute()
+        # Validate the reference exists
+        table = "services" if data.type == "service" else "accessories"
+        ref = supabase.table(table).select("id, name").eq("id", data.reference_id).execute()
 
-    if not ref.data:
-        raise HTTPException(status_code=404, detail=f"{data.type.capitalize()} not found")
+        if not ref.data:
+            raise HTTPException(status_code=404, detail=f"{data.type.capitalize()} not found")
 
-    # Check for duplicate enquiry (same phone + same reference within 24 hours)
-    time_threshold = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    existing = (
-        supabase.table("enquiries")
-        .select("id")
-        .eq("customer_phone", phone)
-        .eq("reference_id", data.reference_id)
-        .eq("type", data.type)
-        .gte("created_at", time_threshold)
-        .execute()
-    )
-
-    if existing.data:
-        # Return 200 (not 201) for duplicates — still a success from the customer's perspective
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=200,
-            content={
-                "success": True,
-                "message": "You have already enquired about this item. Our shop will contact you shortly.",
-                "data": {},
-                "duplicate": True,
-            },
+        # Check for duplicate enquiry (same phone + same reference within 24 hours)
+        time_threshold = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        existing = (
+            supabase.table("enquiries")
+            .select("id")
+            .eq("customer_phone", phone)
+            .eq("reference_id", data.reference_id)
+            .eq("type", data.type)
+            .gte("created_at", time_threshold)
+            .execute()
         )
 
-    # Create the enquiry
-    enquiry_data = {
-        "type": data.type,
-        "reference_id": data.reference_id,
-        "reference_name": data.reference_name,
-        "category_name": data.category_name,
-        "customer_name": data.customer_name.strip(),
-        "customer_phone": phone,
-        "verification_status": "verified",
-        "enquiry_status": "new",
-    }
+        if existing.data:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "success": True,
+                    "message": "You have already enquired about this item. Our shop will contact you shortly.",
+                    "data": {},
+                    "duplicate": True,
+                },
+            )
 
-    result = supabase.table("enquiries").insert(enquiry_data).execute()
+        # Create the enquiry
+        enquiry_data = {
+            "type": data.type,
+            "reference_id": data.reference_id,
+            "reference_name": data.reference_name,
+            "category_name": data.category_name,
+            "customer_name": data.customer_name.strip(),
+            "customer_phone": phone,
+            "verification_status": "verified",
+            "enquiry_status": "new",
+        }
 
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to create enquiry")
+        result = supabase.table("enquiries").insert(enquiry_data).execute()
 
-    return {"success": True, "message": "Enquiry submitted successfully", "data": result.data[0], "duplicate": False}
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create enquiry")
+
+        return {"success": True, "message": "Enquiry submitted successfully", "data": result.data[0], "duplicate": False}
+
+    except HTTPException:
+        raise  # Re-raise FastAPI HTTP exceptions as-is
+    except Exception as e:
+        # Catch ALL other exceptions so they produce a FastAPI JSON response
+        # instead of crashing the Vercel function (which strips CORS headers)
+        print(f"[ENQUIRY ERROR] {type(e).__name__}: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Server error: {type(e).__name__}: {str(e)}"},
+        )
 
 
 @router.get("/")
